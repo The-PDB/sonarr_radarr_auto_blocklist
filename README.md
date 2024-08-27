@@ -1,13 +1,14 @@
-Automatically delete and request failed downloads and imports from Sonarr (Radarr coming soon)
+Automatically delete and request failed downloads and imports from Sonarr/Radarr
 ```
 Usage: sonarr_radarr_auto_blocklist [OPTIONS] <URL> <API_KEY>
 
 Arguments:
   <URL>      Url for Sonarr instance -- Ex: http://localhost:8989
-  <API_KEY>  Sonarr API key
+  <API_KEY>  Sonarr/Radarr API key
 
 Options:
-      --skip-redownload  Skip attempting to redownload
+      --radarr           Is this a Radarr instance
+      --skip-redownload  Skip attempting to redownload release
   -h, --help             Print help
   -V, --version          Print version
 ```
