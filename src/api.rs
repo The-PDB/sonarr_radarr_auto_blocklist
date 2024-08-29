@@ -137,14 +137,20 @@ impl QueueJson for radarr::Queue {
     }
 }
 
+#[derive(Debug)]
 pub struct Record {
     id: i64,
     media_id: i64,
     title: String,
+    tracked_status: String,
     status: String,
 }
 
 impl Record {
+    pub fn get_tracked_status(&self) -> &str {
+        &self.tracked_status
+    }
+
     pub fn get_status(&self) -> &str {
         &self.status
     }
@@ -156,7 +162,8 @@ impl From<&sonarr::Record> for Record {
             id: record.id,
             media_id: record.episode_id,
             title: record.title.clone(),
-            status: record.tracked_download_status.clone(),
+            tracked_status: record.tracked_download_status.clone(),
+            status: record.status.clone(),
         }
     }
 }
@@ -167,7 +174,8 @@ impl From<&radarr::Record> for Record {
             id: record.id,
             media_id: record.movie_id,
             title: record.title.clone(),
-            status: record.tracked_download_status.clone(),
+            tracked_status: record.tracked_download_status.clone(),
+            status: record.status.clone(),
         }
     }
 }

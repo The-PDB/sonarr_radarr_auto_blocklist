@@ -28,13 +28,14 @@ pub struct Cli {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    const BAD_STATUS: &str = "warning";
     let cli = Cli::parse();
     let api = Api::new(cli.url, cli.api_key, cli.radarr, cli.skip_redownload);
     let records = api.get_queue().await?.get_records();
 
     // Search records for failed imports and downloads
     for record in records {
-        if record.get_status() == "warning" {
+        if record.get_tracked_status() == BAD_STATUS || record.get_status() == BAD_STATUS {
             println!("Deleting record {}", record);
             // Try to delete from queue
             if api.delete_queue_record(&record).await.is_err() {
