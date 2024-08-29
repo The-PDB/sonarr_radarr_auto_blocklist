@@ -17,10 +17,10 @@ pub struct Record {
     pub id: i64,
     pub movie_id: i64,
     pub movie: Option<Movie>,
-    pub languages: Vec<Language>,
-    pub quality: Quality,
-    pub custom_formats: Vec<CustomFormat>,
-    pub custom_format_score: i64,
+    pub languages: Option<Vec<Language>>,
+    pub quality: Option<Quality>,
+    pub custom_formats: Option<Vec<CustomFormat>>,
+    pub custom_format_score: Option<i64>,
     pub size: i64,
     pub title: String,
     pub sizeleft: i64,
@@ -37,7 +37,7 @@ pub struct Record {
     pub download_client: String,
     pub download_client_has_post_import_category: bool,
     pub indexer: String,
-    pub output_path: String,
+    pub output_path: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
