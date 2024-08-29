@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
     // Search records for failed imports and downloads
     for record in records {
         if record.get_status() == "warning" {
-            println!("Deleting record: {}", record);
+            println!("Deleting record {}", record);
             // Try to delete from queue
             if api.delete_queue_record(&record).await.is_err() {
                 continue;
