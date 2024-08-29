@@ -1,3 +1,5 @@
+use core::fmt;
+
 use anyhow::{ensure, Context, Result};
 use reqwest::{header::ACCEPT, Client};
 
@@ -37,6 +39,8 @@ impl Api {
             self.api_key
         );
 
+        // println!("URL: {}", url);
+
         let response = self
             .client
             .get(&url)
@@ -44,6 +48,14 @@ impl Api {
             .send()
             .await
             .context("failed to get queue data")?;
+
+        // println!("Response: {:?}", response.text().await?);
+
+        ensure!(
+            response.status().is_success(),
+            "Failed to get queue data. Bad status code: {}",
+            response.status()
+        );
 
         if self.radarr {
             Ok(Box::new(response.json::<radarr::Queue>().await?))
@@ -99,8 +111,14 @@ impl QueueJson for radarr::Queue {
 
 pub struct Record {
     id: i64,
-    pub title: String,
-    pub status: String,
+    title: String,
+    status: String,
+}
+
+impl Record {
+    pub fn get_status(&self) -> &str {
+        &self.status
+    }
 }
 
 impl From<&sonarr::Record> for Record {
@@ -120,5 +138,11 @@ impl From<&radarr::Record> for Record {
             title: record.title.clone(),
             status: record.tracked_download_status.clone(),
         }
+    }
+}
+
+impl fmt::Display for Record {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}: {}", self.id, self.title)
     }
 }

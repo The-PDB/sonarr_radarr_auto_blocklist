@@ -16,7 +16,7 @@ pub struct Queue {
 pub struct Record {
     pub id: i64,
     pub movie_id: i64,
-    pub movie: Movie,
+    pub movie: Option<Movie>,
     pub languages: Vec<Language>,
     pub quality: Quality,
     pub custom_formats: Vec<CustomFormat>,
@@ -31,7 +31,7 @@ pub struct Record {
     pub tracked_download_status: String,
     pub tracked_download_state: String,
     pub status_messages: Vec<StatusMessage>,
-    pub error_message: String,
+    pub error_message: Option<String>,
     pub download_id: String,
     pub protocol: String,
     pub download_client: String,
