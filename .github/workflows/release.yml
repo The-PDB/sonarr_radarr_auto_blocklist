@@ -1,82 +1,58 @@
-name: Build and Release
+name: Release
+
+permissions:
+  contents: write
 
 on:
   push:
     tags:
-      - '*'  # Triggers on any tag push
-  workflow_dispatch:  # Allows manual triggering of the workflow
+      - v[0-9]+.*
+  workflow_dispatch:
 
 jobs:
-  build:
-    name: Build for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        target: ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-gnu' || 'x86_64-unknown-linux-gnu' }}
-        override: true
-
-    - name: Build
-      run: cargo build --release --target ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-gnu' || 'x86_64-unknown-linux-gnu' }}
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.os == 'windows-latest' && 'sonarr_radarr_auto_blocklist_windows.exe' || 'sonarr_radarr_auto_blocklist_linux' }}
-        path: target/${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-gnu/release/sonarr_radarr_auto_blocklist.exe' || 'x86_64-unknown-linux-gnu/release/sonarr_radarr_auto_blocklist' }}
-
-  release:
-    name: Create GitHub Release
-    needs: build
+  create-release:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # (optional) Path to changelog.
+          changelog: CHANGELOG.md
+          # (required) GitHub token for creating GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Download Windows build
-      uses: actions/download-artifact@v3
-      with:
-        name: sonarr_radarr_auto_blocklist_windows.exe
-        path: ./windows
-
-    - name: Download Linux build
-      uses: actions/download-artifact@v3
-      with:
-        name: sonarr_radarr_auto_blocklist_linux
-        path: ./linux
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Windows Asset
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./windows/sonarr_radarr_auto_blocklist_windows.exe
-        asset_name: sonarr_radarr_auto_blocklist_windows.exe
-        asset_content_type: application/octet-stream
-
-    - name: Upload Linux Asset
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./linux/sonarr_radarr_auto_blocklist_linux
-        asset_name: sonarr_radarr_auto_blocklist_linux
-        asset_content_type: application/octet-stream
+  upload-assets:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+          # Note that glob pattern is not supported yet.
+          bin: sonarr_radarr_auto_blocklist_linux, sonarr_radarr_auto_blocklist_macos, sonarr_radarr_auto_blocklist_linux
+          # (optional) Target triple, default is host triple.
+          # This is optional but it is recommended that this always be set to
+          # clarify which target you are building for if macOS is included in
+          # the matrix because GitHub Actions changed the default architecture
+          # of macos-latest since macos-14.
+          target: ${{ matrix.target }}
+          # (optional) On which platform to distribute the `.tar.gz` file.
+          # [default value: unix]
+          # [possible values: all, unix, windows, none]
+          tar: unix
+          # (optional) On which platform to distribute the `.zip` file.
+          # [default value: windows]
+          # [possible values: all, unix, windows, none]
+          zip: windows
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
