@@ -17,7 +17,7 @@ pub struct Cli {
     #[arg(value_parser)]
     api_key: String,
 
-    /// Is this a Radarr instance
+    /// Use Radarr parsing instead of Sonarr
     #[arg(long, value_parser, default_value = "false")]
     radarr: bool,
 

@@ -7,7 +7,7 @@ Arguments:
   <API_KEY>  Sonarr/Radarr API key
 
 Options:
-      --radarr           Is this a Radarr instance
+      --radarr           Use Radarr parsing instead of Sonarr
       --skip-redownload  Skip attempting to redownload release
   -h, --help             Print help
   -V, --version          Print version
