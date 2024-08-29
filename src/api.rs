@@ -15,7 +15,7 @@ pub struct Api {
 }
 
 impl Api {
-    const API_PATH: &'static str = "api/v3/queue";
+    const API_PATH: &'static str = "api/v3";
     const QUEUE_PARAMS: &'static str = "page=1&pageSize=1000";
     const DELETE_PARAMS: &'static str =
         "removeFromClient=false&blocklist=true&changeCategory=false";
@@ -32,14 +32,12 @@ impl Api {
 
     pub async fn get_queue(&self) -> Result<Box<dyn QueueJson>> {
         let url = format!(
-            "{}/{}?{}&apikey={}",
+            "{}/{}/queue?{}&apikey={}",
             self.source_url,
             Self::API_PATH,
             Self::QUEUE_PARAMS,
             self.api_key
         );
-
-        // println!("URL: {}", url);
 
         let response = self
             .client
@@ -48,8 +46,6 @@ impl Api {
             .send()
             .await
             .context("failed to get queue data")?;
-
-        // println!("Response: {:?}", response.text().await?);
 
         ensure!(
             response.status().is_success(),
@@ -66,7 +62,7 @@ impl Api {
 
     pub async fn delete_queue_record(&self, record: &Record) -> Result<()> {
         let url = format!(
-            "{}/{}/{}?{}&skipRedownload={}&apikey={}",
+            "{}/{}/queue/{}?{}&skipRedownload={}&apikey={}",
             self.source_url,
             Self::API_PATH,
             record.id,
@@ -85,6 +81,38 @@ impl Api {
         ensure!(
             response.status().is_success(),
             "Failed to delete record {}. Bad status code: {}",
+            record.title,
+            response.status()
+        );
+
+        Ok(())
+    }
+
+    pub async fn delete_episode_file(&self, record: &Record) -> Result<()> {
+        let path = if self.radarr {
+            "moviefile"
+        } else {
+            "episodefile"
+        };
+        let url = format!(
+            "{}/{}/{}/{}?apikey={}",
+            self.source_url,
+            Self::API_PATH,
+            path,
+            record.media_id,
+            self.api_key,
+        );
+
+        let response = self
+            .client
+            .delete(&url)
+            .header(ACCEPT, "*/*")
+            .send()
+            .await?;
+
+        ensure!(
+            response.status().is_success(),
+            "Failed to delete file for record {}. Bad status code: {}",
             record.title,
             response.status()
         );
@@ -111,6 +139,7 @@ impl QueueJson for radarr::Queue {
 
 pub struct Record {
     id: i64,
+    media_id: i64,
     title: String,
     status: String,
 }
@@ -125,6 +154,7 @@ impl From<&sonarr::Record> for Record {
     fn from(record: &sonarr::Record) -> Self {
         Self {
             id: record.id,
+            media_id: record.episode_id,
             title: record.title.clone(),
             status: record.tracked_download_status.clone(),
         }
@@ -135,6 +165,7 @@ impl From<&radarr::Record> for Record {
     fn from(record: &radarr::Record) -> Self {
         Self {
             id: record.id,
+            media_id: record.movie_id,
             title: record.title.clone(),
             status: record.tracked_download_status.clone(),
         }

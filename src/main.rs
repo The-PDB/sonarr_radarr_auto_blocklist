@@ -36,7 +36,14 @@ async fn main() -> Result<()> {
     for record in records {
         if record.get_status() == "warning" {
             println!("Deleting record: {}", record);
-            api.delete_queue_record(&record).await?;
+            // Try to delete from queue
+            if api.delete_queue_record(&record).await.is_err() {
+                continue;
+            };
+            // Try to delete file (for files that imported)
+            if api.delete_episode_file(&record).await.is_err() {
+                continue;
+            };
         }
     }
 
