@@ -238,8 +238,8 @@ pub struct Revision {
 pub struct CustomFormat {
     pub id: i64,
     pub name: String,
-    pub include_custom_format_when_renaming: bool,
-    pub specifications: Vec<Specification>,
+    pub include_custom_format_when_renaming: Option<bool>,
+    pub specifications: Option<Vec<Specification>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
