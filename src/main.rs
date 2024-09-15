@@ -2,7 +2,7 @@ mod api;
 mod json;
 
 use anyhow::Result;
-use api::Api;
+use api::{Api, Record};
 use clap::Parser;
 
 /// Automatically delete and request failed downloads and imports from Sonarr/Radarr
@@ -33,19 +33,27 @@ async fn main() -> Result<()> {
     let api = Api::new(cli.url, cli.api_key, cli.radarr, cli.skip_redownload);
     let records = api.get_queue().await?.get_records();
 
-    // Search records for failed imports and downloads
-    for record in records {
-        if record.get_tracked_status() == BAD_STATUS || record.get_status() == BAD_STATUS {
-            println!("Deleting record {}", record);
-            // Try to delete from queue
-            if api.delete_queue_record(&record).await.is_err() {
-                continue;
-            };
-            // Try to delete file (for files that imported)
-            if api.delete_episode_file(&record).await.is_err() {
-                continue;
-            };
-        }
+    // Filter out successfull records
+    let records: Vec<Record> = records
+        .into_iter()
+        .filter(|record| {
+            record.get_tracked_status() == BAD_STATUS || record.get_status() == BAD_STATUS
+        })
+        .collect();
+
+    // Delete failed records from files and queue
+    println!("Trying to delete {} records", records.len());
+    for record in &records {
+        if let Err(e) = api.delete_episode_file(record).await {
+            println!("Failed to delete: {:?}", e);
+            continue;
+        };
+    }
+
+    for record in &records {
+        if api.delete_queue_record(record).await.is_err() {
+            continue;
+        };
     }
 
     Ok(())

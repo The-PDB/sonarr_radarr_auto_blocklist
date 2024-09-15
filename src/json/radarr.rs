@@ -44,10 +44,10 @@ pub struct Record {
 #[serde(rename_all = "camelCase")]
 pub struct Movie {
     pub id: i64,
-    pub title: String,
-    pub original_title: String,
+    pub title: Option<String>,
+    pub original_title: Option<String>,
     pub original_language: Language,
-    pub alternate_titles: Vec<AlternateTitle>,
+    pub alternate_titles: Option<Vec<AlternateTitle>>,
     pub secondary_year: i64,
     pub secondary_year_source_id: i64,
     pub sort_title: String,
@@ -59,16 +59,16 @@ pub struct Movie {
     pub digital_release: String,
     pub release_date: String,
     pub physical_release_note: String,
-    pub images: Vec<Image>,
+    pub images: Option<Vec<Image>>,
     pub website: String,
-    pub remote_poster: String,
+    pub remote_poster: Option<String>,
     pub year: i64,
-    pub you_tube_trailer_id: String,
+    pub you_tube_trailer_id: Option<String>,
     pub studio: String,
     pub path: String,
     pub quality_profile_id: i64,
     pub has_file: bool,
-    pub movie_file_id: i64,
+    pub movie_file_id: Option<i64>,
     pub monitored: bool,
     pub minimum_availability: String,
     pub is_available: bool,
@@ -78,18 +78,18 @@ pub struct Movie {
     pub imdb_id: String,
     pub tmdb_id: i64,
     pub title_slug: String,
-    pub root_folder_path: String,
-    pub folder: String,
+    pub root_folder_path: Option<String>,
+    pub folder: Option<String>,
     pub certification: String,
     pub genres: Vec<String>,
     pub tags: Vec<i64>,
     pub added: String,
-    pub add_options: AddOptions,
+    pub add_options: Option<AddOptions>,
     pub ratings: Ratings,
-    pub movie_file: MovieFile,
+    pub movie_file: Option<MovieFile>,
     pub collection: Collection,
     pub popularity: i64,
-    pub statistics: Statistics,
+    pub statistics: Option<Statistics>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -106,7 +106,7 @@ pub struct AlternateTitle {
 #[serde(rename_all = "camelCase")]
 pub struct Image {
     pub cover_type: String,
-    pub url: String,
+    pub url: Option<String>,
     pub remote_url: String,
 }
 
@@ -133,7 +133,7 @@ pub struct Ratings {
 #[serde(rename_all = "camelCase")]
 pub struct Imdb {
     pub votes: i64,
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
     pub type_field: String,
 }
@@ -142,7 +142,7 @@ pub struct Imdb {
 #[serde(rename_all = "camelCase")]
 pub struct Tmdb {
     pub votes: i64,
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
     pub type_field: String,
 }
@@ -151,7 +151,7 @@ pub struct Tmdb {
 #[serde(rename_all = "camelCase")]
 pub struct Metacritic {
     pub votes: i64,
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
     pub type_field: String,
 }
@@ -160,7 +160,7 @@ pub struct Metacritic {
 #[serde(rename_all = "camelCase")]
 pub struct RottenTomatoes {
     pub votes: i64,
-    pub value: i64,
+    pub value: f64,
     #[serde(rename = "type")]
     pub type_field: String,
 }

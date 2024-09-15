@@ -49,21 +49,21 @@ pub struct Record {
 pub struct Series {
     pub id: i64,
     pub title: String,
-    pub alternate_titles: Vec<AlternateTitle>,
+    pub alternate_titles: Option<Vec<AlternateTitle>>,
     pub sort_title: String,
     pub status: String,
     pub ended: bool,
-    pub profile_name: String,
+    pub profile_name: Option<String>,
     pub overview: String,
-    pub next_airing: String,
-    pub previous_airing: String,
-    pub network: String,
+    pub next_airing: Option<String>,
+    pub previous_airing: Option<String>,
+    pub network: Option<String>,
     pub air_time: String,
     pub images: Vec<Image>,
     pub original_language: Language,
-    pub remote_poster: String,
+    pub remote_poster: Option<String>,
     pub seasons: Vec<Season>,
-    pub year: i64,
+    pub year: f64,
     pub path: String,
     pub quality_profile_id: i64,
     pub season_folder: bool,
@@ -81,16 +81,16 @@ pub struct Series {
     pub clean_title: String,
     pub imdb_id: String,
     pub title_slug: String,
-    pub root_folder_path: String,
-    pub folder: String,
+    pub root_folder_path: Option<String>,
+    pub folder: Option<String>,
     pub certification: String,
     pub genres: Vec<String>,
     pub tags: Vec<i64>,
     pub added: String,
-    pub add_options: AddOptions,
+    pub add_options: Option<AddOptions>,
     pub ratings: Ratings,
-    pub statistics: Statistics,
-    pub episodes_changed: bool,
+    pub statistics: Option<Statistics>,
+    pub episodes_changed: Option<bool>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -107,7 +107,7 @@ pub struct AlternateTitle {
 #[serde(rename_all = "camelCase")]
 pub struct Image {
     pub cover_type: String,
-    pub url: String,
+    pub url: Option<String>,
     pub remote_url: String,
 }
 
@@ -116,8 +116,8 @@ pub struct Image {
 pub struct Season {
     pub season_number: i64,
     pub monitored: bool,
-    pub statistics: Statistics,
-    pub images: Vec<Image>,
+    pub statistics: Option<Statistics>,
+    pub images: Option<Vec<Image>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -148,7 +148,7 @@ pub struct AddOptions {
 #[serde(rename_all = "camelCase")]
 pub struct Ratings {
     pub votes: i64,
-    pub value: i64,
+    pub value: f64,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -157,27 +157,27 @@ pub struct Episode {
     pub id: i64,
     pub series_id: i64,
     pub tvdb_id: i64,
-    pub episode_file_id: i64,
+    pub episode_file_id: Option<i64>,
     pub season_number: i64,
     pub episode_number: i64,
-    pub title: String,
+    pub title: Option<String>,
     pub air_date: String,
     pub air_date_utc: String,
-    pub runtime: i64,
-    pub finale_type: String,
+    pub runtime: f64,
+    pub finale_type: Option<String>,
     pub overview: String,
-    pub episode_file: EpisodeFile,
+    pub episode_file: Option<EpisodeFile>,
     pub has_file: bool,
     pub monitored: bool,
-    pub absolute_episode_number: i64,
-    pub scene_absolute_episode_number: i64,
-    pub scene_episode_number: i64,
-    pub scene_season_number: i64,
-    pub unverified_scene_numbering: bool,
-    pub end_time: String,
-    pub grab_date: String,
-    pub series: Series,
-    pub images: Vec<Image>,
+    pub absolute_episode_number: Option<i64>,
+    pub scene_absolute_episode_number: Option<i64>,
+    pub scene_episode_number: Option<i64>,
+    pub scene_season_number: Option<i64>,
+    pub unverified_scene_numbering: Option<bool>,
+    pub end_time: Option<String>,
+    pub grab_date: Option<String>,
+    pub series: Option<Series>,
+    pub images: Option<Vec<Image>>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -188,7 +188,7 @@ pub struct EpisodeFile {
     pub season_number: i64,
     pub relative_path: String,
     pub path: String,
-    pub size: i64,
+    pub size: f64,
     pub date_added: String,
     pub scene_name: String,
     pub release_group: String,
@@ -228,8 +228,8 @@ pub struct QualityDetail {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Revision {
-    pub version: i64,
-    pub real: i64,
+    pub version: f64,
+    pub real: f64,
     pub is_repack: bool,
 }
 
@@ -291,16 +291,16 @@ pub struct SelectOption {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MediaInfo {
-    pub id: i64,
+    pub id: Option<i64>,
     pub audio_bitrate: i64,
-    pub audio_channels: i64,
+    pub audio_channels: f64,
     pub audio_codec: String,
     pub audio_languages: String,
     pub audio_stream_count: i64,
-    pub video_bit_depth: i64,
-    pub video_bitrate: i64,
+    pub video_bit_depth: f64,
+    pub video_bitrate: f64,
     pub video_codec: String,
-    pub video_fps: i64,
+    pub video_fps: f64,
     pub video_dynamic_range: String,
     pub video_dynamic_range_type: String,
     pub resolution: String,

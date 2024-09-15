@@ -60,6 +60,38 @@ impl Api {
         }
     }
 
+    pub async fn get_media(&self, media_id: i64) -> Result<Box<dyn MediaItem>> {
+        let path = if self.radarr { "movie" } else { "episode" };
+
+        let url = format!(
+            "{}/{}/{}/{}?apikey={}",
+            self.source_url,
+            Self::API_PATH,
+            path,
+            media_id,
+            self.api_key
+        );
+
+        let response = self
+            .client
+            .get(&url)
+            .header(ACCEPT, "application/json")
+            .send()
+            .await?;
+
+        ensure!(
+            response.status().is_success(),
+            "Failed to get media {}",
+            media_id
+        );
+
+        if self.radarr {
+            Ok(Box::new(response.json::<radarr::Movie>().await?))
+        } else {
+            Ok(Box::new(response.json::<sonarr::Episode>().await?))
+        }
+    }
+
     pub async fn delete_queue_record(&self, record: &Record) -> Result<()> {
         let url = format!(
             "{}/{}/queue/{}?{}&skipRedownload={}&apikey={}",
@@ -94,12 +126,19 @@ impl Api {
         } else {
             "episodefile"
         };
+
+        let media = self.get_media(record.media_id).await?;
+
+        let file_id = media
+            .get_file_id()
+            .ok_or(anyhow::anyhow!("Record does not have a file"))?;
+
         let url = format!(
             "{}/{}/{}/{}?apikey={}",
             self.source_url,
             Self::API_PATH,
             path,
-            record.media_id,
+            file_id,
             self.api_key,
         );
 
@@ -134,6 +173,22 @@ impl QueueJson for sonarr::Queue {
 impl QueueJson for radarr::Queue {
     fn get_records(&self) -> Vec<Record> {
         self.records.iter().map(Record::from).collect()
+    }
+}
+
+pub trait MediaItem {
+    fn get_file_id(&self) -> Option<i64>;
+}
+
+impl MediaItem for sonarr::Episode {
+    fn get_file_id(&self) -> Option<i64> {
+        self.episode_file_id
+    }
+}
+
+impl MediaItem for radarr::Movie {
+    fn get_file_id(&self) -> Option<i64> {
+        self.movie_file_id
     }
 }
 
